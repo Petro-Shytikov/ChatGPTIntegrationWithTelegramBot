@@ -9,6 +9,8 @@ jobs:
   publish:
     name: Publish Tagged Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -29,11 +31,17 @@ jobs:
         run: dotnet publish src/WebService/WebService.csproj --configuration Release --no-restore --output ./artifacts/publish
 
       - name: Create ZIP package
-        run: cd ./artifacts/publish && zip -r ../WebService-${{ github.ref_name }}.zip .
+        run: cd ./artifacts/publish && zip -r ../ChatGPTIntegrationWithTelegramBot-${{ github.ref_name }}.zip .
 
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
         with:
-          name: WebService-${{ github.ref_name }}
-          path: ./artifacts/WebService-${{ github.ref_name }}.zip
+          name: ChatGPTIntegrationWithTelegramBot-${{ github.ref_name }}
+          path: ./artifacts/ChatGPTIntegrationWithTelegramBot-${{ github.ref_name }}.zip
           if-no-files-found: error
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/ChatGPTIntegrationWithTelegramBot-${{ github.ref_name }}.zip
+          generate_release_notes: true
