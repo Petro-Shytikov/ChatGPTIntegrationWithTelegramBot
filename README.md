@@ -103,4 +103,3 @@ This endpoint uses TELEGRAM_PUBLIC_WEBHOOK_URL and configures:
 - src/WebService/Program.cs: app startup, DI, endpoints, Telegram to ChatGPT flow.
 - src/WebService/WebService.csproj: package references.
 - Dockerfile: multi-stage container build and runtime image.
-- .env.example: environment variable template.
