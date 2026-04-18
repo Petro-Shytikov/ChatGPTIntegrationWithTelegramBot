@@ -30,6 +30,31 @@ jobs:
       - name: Publish
         run: dotnet publish src/WebService/WebService.csproj --configuration Release --no-restore --output ./artifacts/publish
 
+      - name: Run Docker health check
+        run: |
+          docker build --tag chatgptintegrationwithtelegrambot-release .
+          container_id=$(docker run --detach --rm --publish 8080:8080 chatgptintegrationwithtelegrambot-release)
+
+          cleanup() {
+            docker stop "$container_id" >/dev/null
+          }
+
+          trap cleanup EXIT
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:8080/health; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 30 ]; then
+              docker logs "$container_id"
+              echo "Health check endpoint did not become ready in time."
+              exit 1
+            fi
+
+            sleep 2
+          done
+
       - name: Create ZIP package
         run: cd ./artifacts/publish && zip -r ../ChatGPTIntegrationWithTelegramBot-${{ github.ref_name }}.zip .
 
