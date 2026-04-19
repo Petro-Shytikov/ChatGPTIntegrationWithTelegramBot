@@ -13,18 +13,15 @@ public sealed class TelegramController : ControllerBase
 {
 	private readonly ITelegramBotClient _botClient;
 	private readonly AIAgent _aiAgent;
-	private readonly IAppConfiguration _configuration;
 	private readonly ILogger<TelegramController> _logger;
 
 	public TelegramController(
 		ITelegramBotClient botClient,
 		AIAgent aiAgent,
-		IAppConfiguration configuration,
 		ILogger<TelegramController> logger)
 	{
 		_botClient = botClient;
 		_aiAgent = aiAgent;
-		_configuration = configuration;
 		_logger = logger;
 	}
 
@@ -64,19 +61,4 @@ public sealed class TelegramController : ControllerBase
 
 		return Ok();
 	}
-
-	[HttpPost("set-webhook")]
-	public async Task<IActionResult> SetWebhook(CancellationToken cancellationToken)
-	{
-		if (string.IsNullOrWhiteSpace(_configuration.TelegramPublicWebhookUrl))
-		{
-			throw new InvalidOperationException("Botconfiguration:TelegramPublicWebhookUrl is required for webhook registration.");
-		}
-
-		var webhookUrl = _configuration.TelegramPublicWebhookUrl.TrimEnd('/') + "/telegram/webhook";
-		await _botClient.SetWebhook(webhookUrl, secretToken: _configuration.TelegramWebhookSecretToken, cancellationToken: cancellationToken);
-
-		return Ok(new { webhookUrl });
-	}
-
 }

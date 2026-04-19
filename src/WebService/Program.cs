@@ -8,6 +8,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddAppConfiguration();
 builder.Services.AddTelegramBotClient();
 builder.Services.AddChatGptAgent();
+builder.Services.AddTelegramWebhookInitialization();
 
 var app = builder.Build();
 
