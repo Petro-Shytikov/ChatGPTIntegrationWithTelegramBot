@@ -31,7 +31,14 @@ jobs:
         run: echo "${GITHUB_REF_NAME}" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
 
       - name: Publish
-        run: dotnet publish src/WebService/WebService.csproj --configuration Release --output ./artifacts/publish
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          VERSION_CORE="${TAG_VERSION%%[-+]*}"
+          dotnet publish src/WebService/WebService.csproj --configuration Release --output ./artifacts/publish \
+            -p:Version="$TAG_VERSION" \
+            -p:InformationalVersion="$TAG_VERSION" \
+            -p:FileVersion="$VERSION_CORE.0" \
+            -p:AssemblyVersion="$VERSION_CORE.0"
 
       - name: Create ZIP package
         run: cd ./artifacts/publish && zip -r ../ChatGPTIntegrationWithTelegramBot-${{ github.ref_name }}.zip .
