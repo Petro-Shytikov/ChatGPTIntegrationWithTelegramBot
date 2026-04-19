@@ -1,0 +1,50 @@
+name: Docker Health Check
+description: Build an image, run a container, and wait for a healthy HTTP endpoint.
+
+inputs:
+  image-name:
+    description: Docker image name to build and run
+    required: true
+  health-url:
+    description: Health endpoint URL to probe
+    required: false
+    default: http://127.0.0.1:8080/health
+  attempts:
+    description: Max probe attempts
+    required: false
+    default: "30"
+  sleep-seconds:
+    description: Delay between attempts
+    required: false
+    default: "2"
+
+runs:
+  using: composite
+  steps:
+    - name: Build and verify container health
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        docker build --tag "${{ inputs.image-name }}" .
+        container_id=$(docker run --detach --rm --publish 8080:8080 "${{ inputs.image-name }}")
+
+        cleanup() {
+          docker stop "$container_id" >/dev/null || true
+        }
+
+        trap cleanup EXIT
+
+        for attempt in $(seq 1 "${{ inputs.attempts }}"); do
+          if curl --fail --silent --show-error "${{ inputs.health-url }}"; then
+            exit 0
+          fi
+
+          if [ "$attempt" -eq "${{ inputs.attempts }}" ]; then
+            docker logs "$container_id"
+            echo "Health check endpoint did not become ready in time."
+            exit 1
+          fi
+
+          sleep "${{ inputs.sleep-seconds }}"
+        done

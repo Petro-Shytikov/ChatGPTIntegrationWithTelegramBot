@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      dotnet-version:
+        required: false
+        type: string
+        default: "10.x"
+      image-name:
+        required: false
+        type: string
+        default: chatgptintegrationwithtelegrambot-ci
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run Docker health check
+        uses: ./.github/actions/docker-health-check
+        with:
+          image-name: ${{ inputs.image-name }}
