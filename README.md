@@ -18,22 +18,24 @@ ASP.NET Core Web API that receives Telegram bot updates and forwards user messag
 - Microsoft.Agents.AI.OpenAI
 - OpenAI SDK for .NET
 
-## Required environment variables
+## Configuration sources
 
-These are required at runtime:
+Read from environment variables only:
 
-- TELEGRAM_BOT_TOKEN
-- TELEGRAM_PUBLIC_WEBHOOK_URL
-- OPENAI_API_KEY
+- TELEGRAM_BOT_TOKEN (required)
+- TELEGRAM_PUBLIC_WEBHOOK_URL (required only for POST /telegram/set-webhook)
+- TELEGRAM_WEBHOOK_SECRET_TOKEN (optional)
+- OPENAI_API_KEY (required)
 
-Optional:
+Read from appsettings only:
 
-- TELEGRAM_WEBHOOK_SECRET_TOKEN
+- BotSettings:ChatGptModel (default: gpt-5.4-mini)
+- BotSettings:ChatGptSystemPrompt (optional)
 
-Optional app behavior settings:
+Legacy appsettings path also supported:
 
-- ChatGpt__Model (default: gpt-5.4-mini)
-- ChatGpt__SystemPrompt (default: You are a helpful assistant in Telegram.)
+- ChatGpt:Model
+- ChatGpt:SystemPrompt
 
 ## Local run (without Docker)
 
@@ -100,6 +102,12 @@ This endpoint uses TELEGRAM_PUBLIC_WEBHOOK_URL and configures:
 
 ## Project structure
 
-- src/WebService/Program.cs: app startup, DI, endpoints, Telegram to ChatGPT flow.
+- src/WebService/Program.cs: app startup and DI configuration.
+- src/WebService/Controllers/TelegramController.cs: Telegram webhook and webhook registration endpoints.
+- src/WebService/Controllers/HomeController.cs: root status endpoint.
+- src/WebService/Configuration.cs: strongly-typed configuration model.
+- src/WebService/IAppConfiguration.cs: configuration interface used by services/controllers.
+- src/WebService/ConfigurationProvider.cs: builds and validates configuration (env-only secrets + appsettings chat options).
+- src/WebService/ServiceCollectionExtensions.cs: DI registration extensions.
 - src/WebService/WebService.csproj: package references.
 - Dockerfile: multi-stage container build and runtime image.
