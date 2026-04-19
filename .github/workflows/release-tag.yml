@@ -6,9 +6,15 @@ on:
       - 'v*'
 
 jobs:
+  build:
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      image-name: chatgptintegrationwithtelegrambot-release
+
   publish:
     name: Publish Tagged Build
     runs-on: ubuntu-latest
+    needs: build
     permissions:
       contents: write
 
@@ -24,36 +30,15 @@ jobs:
       - name: Validate SemVer tag
         run: echo "${GITHUB_REF_NAME}" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
 
-      - name: Restore
-        run: dotnet restore src/WebService/WebService.csproj
-
       - name: Publish
-        run: dotnet publish src/WebService/WebService.csproj --configuration Release --no-restore --output ./artifacts/publish
-
-      - name: Run Docker health check
         run: |
-          docker build --tag chatgptintegrationwithtelegrambot-release .
-          container_id=$(docker run --detach --rm --publish 8080:8080 chatgptintegrationwithtelegrambot-release)
-
-          cleanup() {
-            docker stop "$container_id" >/dev/null
-          }
-
-          trap cleanup EXIT
-
-          for attempt in $(seq 1 30); do
-            if curl --fail --silent --show-error http://127.0.0.1:8080/health; then
-              exit 0
-            fi
-
-            if [ "$attempt" -eq 30 ]; then
-              docker logs "$container_id"
-              echo "Health check endpoint did not become ready in time."
-              exit 1
-            fi
-
-            sleep 2
-          done
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          VERSION_CORE="${TAG_VERSION%%[-+]*}"
+          dotnet publish src/WebService/WebService.csproj --configuration Release --output ./artifacts/publish \
+            -p:Version="$TAG_VERSION" \
+            -p:InformationalVersion="$TAG_VERSION" \
+            -p:FileVersion="$VERSION_CORE.0" \
+            -p:AssemblyVersion="$VERSION_CORE.0"
 
       - name: Create ZIP package
         run: cd ./artifacts/publish && zip -r ../ChatGPTIntegrationWithTelegramBot-${{ github.ref_name }}.zip .

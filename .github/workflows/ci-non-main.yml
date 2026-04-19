@@ -1,0 +1,14 @@
+name: CI Non Main
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches-ignore:
+      - main
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable-build.yml
+
