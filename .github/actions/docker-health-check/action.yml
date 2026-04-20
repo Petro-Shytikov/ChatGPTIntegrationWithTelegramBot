@@ -16,7 +16,7 @@ inputs:
   sleep-seconds:
     description: Delay between attempts
     required: false
-    default: "2"
+    default: "5"
 
 runs:
   using: composite
@@ -41,7 +41,15 @@ runs:
           fi
 
           if [ "$attempt" -eq "${{ inputs.attempts }}" ]; then
+            echo ""
+            echo "=========================================="
+            echo "Health check failed after ${{ inputs.attempts }} attempts"
+            echo "=========================================="
+            echo ""
+            echo "Container logs from: ${{ inputs.image-name }}"
+            echo "---"
             docker logs "$container_id"
+            echo "---"
             echo "Health check endpoint did not become ready in time."
             exit 1
           fi
