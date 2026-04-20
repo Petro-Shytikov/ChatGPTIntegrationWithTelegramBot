@@ -12,11 +12,23 @@ inputs:
   attempts:
     description: Max probe attempts
     required: false
-    default: "30"
+    default: "3"
   sleep-seconds:
     description: Delay between attempts
     required: false
-    default: "2"
+    default: "5"
+  telegram-bot-token:
+    description: Telegram bot token for container environment
+    required: true
+  telegram-public-webhook-url:
+    description: Telegram public webhook URL for container environment
+    required: true
+  telegram-webhook-secret-token:
+    description: Telegram webhook secret token for container environment
+    required: true
+  openai-api-key:
+    description: OpenAI API key for container environment
+    required: true
 
 runs:
   using: composite
@@ -26,11 +38,37 @@ runs:
       run: |
         set -euo pipefail
 
+        if [ -z "${{ inputs.telegram-bot-token }}" ]; then
+          echo "telegram-bot-token input must not be empty."
+          exit 1
+        fi
+
+        if [ -z "${{ inputs.telegram-public-webhook-url }}" ]; then
+          echo "telegram-public-webhook-url input must not be empty."
+          exit 1
+        fi
+
+        if [ -z "${{ inputs.telegram-webhook-secret-token }}" ]; then
+          echo "telegram-webhook-secret-token input must not be empty."
+          exit 1
+        fi
+
+        if [ -z "${{ inputs.openai-api-key }}" ]; then
+          echo "openai-api-key input must not be empty."
+          exit 1
+        fi
+
         docker build --tag "${{ inputs.image-name }}" .
-        container_id=$(docker run --detach --rm --publish 8080:8080 "${{ inputs.image-name }}")
+        container_id=$(docker run --detach --publish 8080:8080 \
+          --env TELEGRAM_BOT_TOKEN="${{ inputs.telegram-bot-token }}" \
+          --env TELEGRAM_PUBLIC_WEBHOOK_URL="${{ inputs.telegram-public-webhook-url }}" \
+          --env TELEGRAM_WEBHOOK_SECRET_TOKEN="${{ inputs.telegram-webhook-secret-token }}" \
+          --env OPENAI_API_KEY="${{ inputs.openai-api-key }}" \
+          "${{ inputs.image-name }}")
 
         cleanup() {
-          docker stop "$container_id" >/dev/null || true
+          docker stop "$container_id" >/dev/null 2>&1 || true
+          docker rm "$container_id" >/dev/null 2>&1 || true
         }
 
         trap cleanup EXIT
@@ -41,7 +79,15 @@ runs:
           fi
 
           if [ "$attempt" -eq "${{ inputs.attempts }}" ]; then
-            docker logs "$container_id"
+            echo ""
+            echo "=========================================="
+            echo "Health check failed after ${{ inputs.attempts }} attempts"
+            echo "=========================================="
+            echo ""
+            echo "Container logs from: ${{ inputs.image-name }}"
+            echo "---"
+            docker logs "$container_id" 2>&1 || echo "Failed to retrieve logs"
+            echo "---"
             echo "Health check endpoint did not become ready in time."
             exit 1
           fi

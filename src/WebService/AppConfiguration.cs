@@ -8,7 +8,8 @@ public sealed class AppConfiguration : IAppConfiguration
 		string telegramWebhookSecretToken,
 		string openAiApiKey,
 		string chatGptModel,
-		string chatGptSystemPrompt)
+		string chatGptSystemPrompt,
+		TimeSpan retryTelegramWebhookInitializerDelay)
     {
         TelegramBotToken = telegramBotToken;
         TelegramPublicWebhookUrl = telegramPublicWebhookUrl;
@@ -16,6 +17,7 @@ public sealed class AppConfiguration : IAppConfiguration
         OpenAiApiKey = openAiApiKey;
         ChatGptModel = chatGptModel;
         ChatGptSystemPrompt = chatGptSystemPrompt;
+		RetryTelegramWebhookInitializerDelay = retryTelegramWebhookInitializerDelay;
     }
 
 	[Required]
@@ -35,4 +37,7 @@ public sealed class AppConfiguration : IAppConfiguration
 
 	[Required]
 	public string ChatGptSystemPrompt { get; }
+
+	[Required]
+	public TimeSpan RetryTelegramWebhookInitializerDelay { get; }
 }

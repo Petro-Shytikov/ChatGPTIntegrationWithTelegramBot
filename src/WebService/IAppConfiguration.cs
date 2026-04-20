@@ -6,4 +6,5 @@ public interface IAppConfiguration
 	string OpenAiApiKey { get; }
 	string ChatGptModel { get; }
 	string ChatGptSystemPrompt { get; }
+	TimeSpan RetryTelegramWebhookInitializerDelay { get; }
 }

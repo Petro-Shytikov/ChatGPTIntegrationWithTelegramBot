@@ -9,7 +9,7 @@ ASP.NET Core Web API that receives Telegram bot updates and forwards user messag
 - Sends incoming text messages to ChatGPT.
 - Sends ChatGPT response back to the same Telegram chat.
 - Exposes /health endpoint for CI and runtime health checks.
-- Exposes /telegram/set-webhook endpoint to register webhook in Telegram.
+- Registers Telegram webhook automatically on application startup.
 
 ## Tech stack
 
@@ -23,7 +23,7 @@ ASP.NET Core Web API that receives Telegram bot updates and forwards user messag
 Read from environment variables only:
 
 - TELEGRAM_BOT_TOKEN (required)
-- TELEGRAM_PUBLIC_WEBHOOK_URL (required only for POST /telegram/set-webhook)
+- TELEGRAM_PUBLIC_WEBHOOK_URL (required)
 - TELEGRAM_WEBHOOK_SECRET_TOKEN (required)
 - OPENAI_API_KEY (required)
 
@@ -31,6 +31,7 @@ Read from appsettings only:
 
 - BotSettings:ChatGptModel (required)
 - BotSettings:ChatGptSystemPrompt (required)
+- BotSettings:RetryTelegramWebhookInitializerDelay (required TimeSpan, for example 00:00:30)
 
 ## Local run (without Docker)
 
@@ -70,24 +71,22 @@ docker run --rm --env-file .env -p 8080:8080 chatgptintegrationwithtelegrambot-e
 curl http://localhost:8080/health
 ```
 
-## Register Telegram webhook
+## Telegram webhook registration
 
-After app is running and reachable from internet, call:
+On startup, the service automatically registers webhook URL in Telegram using `TELEGRAM_PUBLIC_WEBHOOK_URL`.
 
-```bash
-curl -X POST http://localhost:8080/telegram/set-webhook
-```
-
-This endpoint uses TELEGRAM_PUBLIC_WEBHOOK_URL and configures:
+Configured webhook value:
 
 - {TELEGRAM_PUBLIC_WEBHOOK_URL}/telegram/webhook
+
+The URL must be publicly reachable by Telegram.
+If registration fails, a background service retries every `BotSettings:RetryTelegramWebhookInitializerDelay` until it succeeds, then stops retrying.
 
 ## Endpoints
 
 - GET /
 - GET /health
 - POST /telegram/webhook
-- POST /telegram/set-webhook
 
 ## Security notes
 

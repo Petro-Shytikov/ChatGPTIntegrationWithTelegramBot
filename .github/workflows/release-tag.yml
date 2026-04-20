@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     uses: ./.github/workflows/reusable-build.yml
+    secrets: inherit
     with:
       image-name: chatgptintegrationwithtelegrambot-release
 
