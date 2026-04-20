@@ -1,13 +1,6 @@
 name: Docker Health Check
 description: Build an image, run a container, and wait for a healthy HTTP endpoint.
 
-env:
-  # These environment variables must be set in the GitHub repository's environment variable storage
-  TELEGRAM_BOT_TOKEN: ${{ vars.TELEGRAM_BOT_TOKEN }}
-  TELEGRAM_PUBLIC_WEBHOOK_URL: ${{ vars.TELEGRAM_PUBLIC_WEBHOOK_URL }}
-  TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ vars.TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-  OPENAI_API_KEY: ${{ vars.OPENAI_API_KEY }}
-
 inputs:
   image-name:
     description: Docker image name to build and run
@@ -33,26 +26,12 @@ runs:
       run: |
         set -euo pipefail
 
-        # Validate that required variables are set
-        if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
-          echo "Error: TELEGRAM_BOT_TOKEN variable is not set in GitHub environment variables"
-          exit 1
-        fi
-        if [ -z "$TELEGRAM_PUBLIC_WEBHOOK_URL" ]; then
-          echo "Error: TELEGRAM_PUBLIC_WEBHOOK_URL variable is not set in GitHub environment variables"
-          exit 1
-        fi
-        if [ -z "$OPENAI_API_KEY" ]; then
-          echo "Error: OPENAI_API_KEY variable is not set in GitHub environment variables"
-          exit 1
-        fi
-
         docker build --tag "${{ inputs.image-name }}" .
         container_id=$(docker run --detach --publish 8080:8080 \
-          --env TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" \
-          --env TELEGRAM_PUBLIC_WEBHOOK_URL="$TELEGRAM_PUBLIC_WEBHOOK_URL" \
-          --env TELEGRAM_WEBHOOK_SECRET_TOKEN="$TELEGRAM_WEBHOOK_SECRET_TOKEN" \
-          --env OPENAI_API_KEY="$OPENAI_API_KEY" \
+          --env TELEGRAM_BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}" \
+          --env TELEGRAM_PUBLIC_WEBHOOK_URL="${{ secrets.TELEGRAM_PUBLIC_WEBHOOK_URL }}" \
+          --env TELEGRAM_WEBHOOK_SECRET_TOKEN="${{ secrets.TELEGRAM_WEBHOOK_SECRET_TOKEN }}" \
+          --env OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
           "${{ inputs.image-name }}")
 
         cleanup() {
