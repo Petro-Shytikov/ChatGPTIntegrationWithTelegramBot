@@ -31,6 +31,7 @@ Read from appsettings only:
 
 - BotSettings:ChatGptModel (required)
 - BotSettings:ChatGptSystemPrompt (required)
+- BotSettings:RetryTelegramWebhookInitializerDelay (required TimeSpan, for example 00:00:30)
 
 ## Local run (without Docker)
 
@@ -79,6 +80,7 @@ Configured webhook value:
 - {TELEGRAM_PUBLIC_WEBHOOK_URL}/telegram/webhook
 
 The URL must be publicly reachable by Telegram.
+If registration fails, a background service retries every `BotSettings:RetryTelegramWebhookInitializerDelay` until it succeeds, then stops retrying.
 
 ## Endpoints
 

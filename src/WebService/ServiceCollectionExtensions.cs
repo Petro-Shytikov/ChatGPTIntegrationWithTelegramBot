@@ -45,7 +45,7 @@ internal static class ServiceCollectionExtensions
 
 	public static IServiceCollection AddTelegramWebhookInitialization(this IServiceCollection services)
 	{
-		services.AddHostedService<TelegramWebhookInitializerHostedService>();
+		services.AddHostedService<TelegramWebhookInitializerBackgroundService>();
 
 		return services;
 	}
