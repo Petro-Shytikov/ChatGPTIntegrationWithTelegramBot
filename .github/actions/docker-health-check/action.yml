@@ -17,6 +17,18 @@ inputs:
     description: Delay between attempts
     required: false
     default: "5"
+  secrets--TELEGRAM_BOT_TOKEN:
+    description: Telegram bot token for container environment
+    required: true
+  secrets--TELEGRAM_PUBLIC_WEBHOOK_URL:
+    description: Telegram public webhook URL for container environment
+    required: true
+  secrets--TELEGRAM_WEBHOOK_SECRET_TOKEN:
+    description: Telegram webhook secret token for container environment
+    required: true
+  secrets--OPENAI_API_KEY:
+    description: OpenAI API key for container environment
+    required: true
 
 runs:
   using: composite
@@ -28,10 +40,10 @@ runs:
 
         docker build --tag "${{ inputs.image-name }}" .
         container_id=$(docker run --detach --publish 8080:8080 \
-          --env TELEGRAM_BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}" \
-          --env TELEGRAM_PUBLIC_WEBHOOK_URL="${{ secrets.TELEGRAM_PUBLIC_WEBHOOK_URL }}" \
-          --env TELEGRAM_WEBHOOK_SECRET_TOKEN="${{ secrets.TELEGRAM_WEBHOOK_SECRET_TOKEN }}" \
-          --env OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
+          --env TELEGRAM_BOT_TOKEN="$secrets--TELEGRAM_BOT_TOKEN" \
+          --env TELEGRAM_PUBLIC_WEBHOOK_URL="$secrets--TELEGRAM_PUBLIC_WEBHOOK_URL" \
+          --env TELEGRAM_WEBHOOK_SECRET_TOKEN="$secrets--TELEGRAM_WEBHOOK_SECRET_TOKEN" \
+          --env OPENAI_API_KEY="$secrets--OPENAI_API_KEY" \
           "${{ inputs.image-name }}")
 
         cleanup() {

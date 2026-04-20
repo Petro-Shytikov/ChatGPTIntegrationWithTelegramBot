@@ -36,3 +36,7 @@ jobs:
         uses: ./.github/actions/docker-health-check
         with:
           image-name: ${{ inputs.image-name }}
+          secrets--TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          secrets--TELEGRAM_PUBLIC_WEBHOOK_URL: ${{ secrets.TELEGRAM_PUBLIC_WEBHOOK_URL }}
+          secrets--TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.TELEGRAM_WEBHOOK_SECRET_TOKEN }}
+          secrets--OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
