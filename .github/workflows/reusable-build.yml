@@ -11,6 +11,15 @@ on:
         required: false
         type: string
         default: chatgptintegrationwithtelegrambot-ci
+    secrets:
+      TELEGRAM_BOT_TOKEN:
+        required: true
+      TELEGRAM_PUBLIC_WEBHOOK_URL:
+        required: true
+      TELEGRAM_WEBHOOK_SECRET_TOKEN:
+        required: true
+      OPENAI_API_KEY:
+        required: true
 
 jobs:
   build:
