@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton<ValidateTelegramSecretFilter>();
+builder.Services.AddSingleton<ValidateTelegramMessageLengthFilter>();
 builder.Services.AddHealthChecks();
 builder.Services.AddAppConfiguration();
 builder.Services.AddTelegramBotClient();
