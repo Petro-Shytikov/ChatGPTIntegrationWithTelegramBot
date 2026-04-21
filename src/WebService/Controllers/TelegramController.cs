@@ -2,7 +2,6 @@ using Microsoft.Agents.AI;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 using WebService.Filters;
 
 namespace WebService.Controllers;
@@ -26,19 +25,13 @@ public sealed class TelegramController : ControllerBase
 	}
 
 	[ServiceFilter(typeof(ValidateTelegramSecretFilter))]
+	[ServiceFilter(typeof(ValidateTelegramMessagePayloadFilter))]
 	[ServiceFilter(typeof(ValidateTelegramMessageLengthFilter))]
 	[HttpPost("webhook")]
 	public async Task<IActionResult> Webhook([FromBody] Update update, CancellationToken cancellationToken)
 	{
-		if (update.Type != UpdateType.Message || update.Message?.Text is not { Length: > 0 } userText)
-		{
-			return Ok();
-		}
-
-		if (update.Message.Chat is null)
-		{
-			return Ok();
-		}
+		var userText = update.Message!.Text!;
+		var chatId = update.Message.Chat!.Id;
 
 		try
 		{
@@ -49,13 +42,13 @@ public sealed class TelegramController : ControllerBase
 				responseText = "I could not generate a response right now.";
 			}
 
-			await _botClient.SendMessage(update.Message.Chat.Id, responseText, cancellationToken: cancellationToken);
+			await _botClient.SendMessage(chatId, responseText, cancellationToken: cancellationToken);
 		}
 		catch (Exception exception)
 		{
 			_logger.LogError(exception, "Failed to process Telegram update {UpdateId}", update.Id);
 			await _botClient.SendMessage(
-				update.Message.Chat.Id,
+				chatId,
 				"Sorry, I could not process your request right now.",
 				cancellationToken: cancellationToken);
 		}

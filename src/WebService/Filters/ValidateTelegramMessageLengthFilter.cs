@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace WebService.Filters;
 
@@ -13,14 +12,13 @@ internal sealed class ValidateTelegramMessageLengthFilter(
 {
 	public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
 	{
-		if (!TryGetTelegramUpdate(context.ActionArguments, out var update) ||
-			update.Type != UpdateType.Message ||
-			update.Message?.Text is not { Length: > 0 } userText ||
-			update.Message.Chat is null)
+		if (!TryGetTelegramUpdate(context.ActionArguments, out var update))
 		{
 			await next();
 			return;
 		}
+
+		var userText = update.Message!.Text!;
 
 		if (userText.Length <= configuration.MaxTelegramRequestLength)
 		{
@@ -35,7 +33,7 @@ internal sealed class ValidateTelegramMessageLengthFilter(
 			configuration.MaxTelegramRequestLength);
 
 		await botClient.SendMessage(
-			update.Message.Chat.Id,
+			update.Message!.Chat!.Id,
 			$"Your request was rejected because it exceeds the maximum allowed length of {configuration.MaxTelegramRequestLength} characters.",
 			cancellationToken: context.HttpContext.RequestAborted);
 
