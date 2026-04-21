@@ -6,6 +6,7 @@ ASP.NET Core Web API that receives Telegram bot updates and forwards user messag
 
 - Exposes a Telegram webhook endpoint at /telegram/webhook.
 - Validates Telegram secret header on every webhook call.
+- Rejects oversized Telegram messages using an MVC filter and returns a rejection reason.
 - Sends incoming text messages to ChatGPT.
 - Sends ChatGPT response back to the same Telegram chat.
 - Exposes /health endpoint for CI and runtime health checks.
@@ -32,6 +33,13 @@ Read from appsettings only:
 - BotSettings:ChatGptModel (required)
 - BotSettings:ChatGptSystemPrompt (required)
 - BotSettings:RetryTelegramWebhookInitializerDelay (required TimeSpan, for example 00:00:30)
+- BotSettings:MaxTelegramRequestLength (required integer, for example 1500)
+
+## Telegram request filtering
+
+- The webhook endpoint applies a message-length filter before forwarding text to ChatGPT.
+- If the incoming message length exceeds `BotSettings:MaxTelegramRequestLength`, the request is rejected.
+- The bot sends a response explaining the reason for rejection and includes the configured limit.
 
 ## Local run (without Docker)
 
