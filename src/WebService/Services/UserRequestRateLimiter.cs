@@ -2,7 +2,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace WebService.Services;
 
-internal sealed class UserRequestRateLimiter(
+public sealed class UserRequestRateLimiter(
 	IAppConfiguration configuration,
 	IMemoryCache memoryCache) : IUserRequestRateLimiter
 {
