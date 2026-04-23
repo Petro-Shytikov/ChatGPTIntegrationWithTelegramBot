@@ -27,6 +27,7 @@ public sealed class TelegramController : ControllerBase
 	[ServiceFilter(typeof(ValidateTelegramSecretFilter))]
 	[ServiceFilter(typeof(ValidateTelegramMessagePayloadFilter))]
 	[ServiceFilter(typeof(ValidateTelegramMessageLengthFilter))]
+	[ServiceFilter(typeof(ValidateTelegramRateLimitFilter))]
 	[HttpPost("webhook")]
 	public async Task<IActionResult> Webhook([FromBody] Update update, CancellationToken cancellationToken)
 	{
