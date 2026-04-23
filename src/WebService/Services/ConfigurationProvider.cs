@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
-public sealed class ConfigurationProvider : IConfigurationProvider
+namespace WebService.Services;
+
+public sealed class AppConfigurationProvider : IAppConfigurationProvider
 {
 	private readonly IConfiguration _configuration;
 
-	public ConfigurationProvider(IConfiguration configuration)
+	public AppConfigurationProvider(IConfiguration configuration)
 	{
 		_configuration = configuration;
 	}

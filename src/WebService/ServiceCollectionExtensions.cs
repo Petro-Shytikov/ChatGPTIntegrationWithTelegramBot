@@ -2,14 +2,15 @@ using Microsoft.Agents.AI;
 using OpenAI;
 using OpenAI.Chat;
 using Telegram.Bot;
+using WebService.Services;
 
 internal static class ServiceCollectionExtensions
 {
 	public static IServiceCollection AddAppConfiguration(this IServiceCollection services)
 	{
-		services.AddSingleton<IConfigurationProvider, ConfigurationProvider>();
+		services.AddSingleton<IAppConfigurationProvider, AppConfigurationProvider>();
 		services.AddSingleton<IAppConfiguration>(serviceProvider =>
-			serviceProvider.GetRequiredService<IConfigurationProvider>().Create());
+			serviceProvider.GetRequiredService<IAppConfigurationProvider>().Create());
 
 		return services;
 	}
