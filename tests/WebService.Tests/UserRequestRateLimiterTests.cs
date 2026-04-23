@@ -101,6 +101,66 @@ public class UserRequestRateLimiterTests
 		await Assert.That(secondUserAllowed).IsTrue();
 	}
 
+	[Test]
+	public async Task GetStatus_WhenUserHasNoRequests_ReturnsFullQuotaAndNoBlock()
+	{
+		using var memoryCache = CreateMemoryCache();
+		var rateLimiter = CreateRateLimiter(memoryCache, aiRequestLimitPerUser: 3, aiRequestLimitPeriod: TimeSpan.FromSeconds(1));
+
+		var status = rateLimiter.GetStatus(userId: 42);
+
+		await Assert.That(status.RemainingRequests).IsEqualTo(3);
+		await Assert.That(status.BlockedUntil).IsNull();
+	}
+
+	[Test]
+	public async Task GetStatus_WhenUserHasConsumedRequests_ReturnsRemainingQuota()
+	{
+		using var memoryCache = CreateMemoryCache();
+		var rateLimiter = CreateRateLimiter(memoryCache, aiRequestLimitPerUser: 3, aiRequestLimitPeriod: TimeSpan.FromSeconds(1));
+
+		rateLimiter.TryIncrement(userId: 42);
+		rateLimiter.TryIncrement(userId: 42);
+
+		var status = rateLimiter.GetStatus(userId: 42);
+
+		await Assert.That(status.RemainingRequests).IsEqualTo(1);
+		await Assert.That(status.BlockedUntil).IsNull();
+	}
+
+	[Test]
+	public async Task GetStatus_WhenUserIsBlocked_ReturnsZeroAndBlockedUntil()
+	{
+		using var memoryCache = CreateMemoryCache();
+		var rateLimiter = CreateRateLimiter(memoryCache, aiRequestLimitPerUser: 1, aiRequestLimitPeriod: TimeSpan.FromMilliseconds(300));
+
+		rateLimiter.TryIncrement(userId: 42);
+		rateLimiter.TryIncrement(userId: 42);
+
+		var status = rateLimiter.GetStatus(userId: 42);
+
+		await Assert.That(status.RemainingRequests).IsEqualTo(0);
+		await Assert.That(status.BlockedUntil).IsNotNull();
+		await Assert.That(status.BlockedUntil!.Value).IsGreaterThan(DateTimeOffset.UtcNow);
+	}
+
+	[Test]
+	public async Task GetStatus_WhenCalled_DoesNotConsumeQuota()
+	{
+		using var memoryCache = CreateMemoryCache();
+		var rateLimiter = CreateRateLimiter(memoryCache, aiRequestLimitPerUser: 2, aiRequestLimitPeriod: TimeSpan.FromSeconds(1));
+
+		rateLimiter.GetStatus(userId: 42);
+
+		var firstResult = rateLimiter.TryIncrement(userId: 42);
+		var secondResult = rateLimiter.TryIncrement(userId: 42);
+		var blockedResult = rateLimiter.TryIncrement(userId: 42);
+
+		await Assert.That(firstResult).IsTrue();
+		await Assert.That(secondResult).IsTrue();
+		await Assert.That(blockedResult).IsFalse();
+	}
+
 	private static UserRequestRateLimiter CreateRateLimiter(IMemoryCache memoryCache, int aiRequestLimitPerUser, TimeSpan aiRequestLimitPeriod) =>
 		new(
 			CreateConfiguration(aiRequestLimitPerUser, aiRequestLimitPeriod),

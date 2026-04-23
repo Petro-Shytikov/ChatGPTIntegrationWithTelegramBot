@@ -44,6 +44,21 @@ public sealed class UserRequestRateLimiter(
         return true;
 	}
 
+	public UserRateLimitStatus GetStatus(long userId)
+	{
+		var now = DateTimeOffset.UtcNow;
+		var state = memoryCache.Get<UserState>(GetCacheKey(userId));
+
+		if (state is null)
+			return new UserRateLimitStatus(configuration.AiRequestLimitPerUser, null);
+
+		if (state.BlockedUntilUtc is { } blockedUntil && now < blockedUntil)
+			return new UserRateLimitStatus(0, blockedUntil);
+
+		var remaining = Math.Max(0, configuration.AiRequestLimitPerUser - state.Count);
+		return new UserRateLimitStatus(remaining, null);
+	}
+
 	private static string GetCacheKey(long userId) => $"telegram-user-request-rate-limit:{userId}";
 
     private sealed record UserState(

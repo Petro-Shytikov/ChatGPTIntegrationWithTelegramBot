@@ -9,7 +9,6 @@ builder.Services.AddSingleton<ValidateTelegramMessagePayloadFilter>();
 builder.Services.AddSingleton<ValidateTelegramMessageLengthFilter>();
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IUserRequestRateLimiter, UserRequestRateLimiter>();
-builder.Services.AddSingleton<ValidateTelegramRateLimitFilter>();
 builder.Services.AddHealthChecks();
 builder.Services.AddAppConfiguration();
 builder.Services.AddTelegramBotClient();
