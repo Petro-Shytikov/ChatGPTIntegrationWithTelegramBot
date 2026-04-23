@@ -19,7 +19,9 @@ public sealed class ConfigurationProvider : IConfigurationProvider
 			chatGptModel: GetRequiredConfigurationValue<string>(_configuration, "BotSettings:ChatGptModel"),
 			chatGptSystemPrompt: GetRequiredConfigurationValue<string>(_configuration, "BotSettings:ChatGptSystemPrompt"),
 			retryTelegramWebhookInitializerDelay: GetRequiredConfigurationValue<TimeSpan>(_configuration, "BotSettings:RetryTelegramWebhookInitializerDelay"),
-			maxTelegramRequestLength: GetRequiredConfigurationValue<int>(_configuration, "BotSettings:MaxTelegramRequestLength")
+			maxTelegramRequestLength: GetRequiredConfigurationValue<int>(_configuration, "BotSettings:MaxTelegramRequestLength"),
+			aiRequestLimitPerUser: GetRequiredConfigurationValue<int>(_configuration, "BotSettings:AiRequestLimitPerUser"),
+			aiRequestLimitPeriod: GetRequiredConfigurationValue<TimeSpan>(_configuration, "BotSettings:AiRequestLimitPeriod")
 		);
 
 		Validate(appConfiguration);

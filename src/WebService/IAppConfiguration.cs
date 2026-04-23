@@ -8,4 +8,6 @@ public interface IAppConfiguration
 	string ChatGptSystemPrompt { get; }
 	TimeSpan RetryTelegramWebhookInitializerDelay { get; }
 	int MaxTelegramRequestLength { get; }
+	int AiRequestLimitPerUser { get; }
+	TimeSpan AiRequestLimitPeriod { get; }
 }

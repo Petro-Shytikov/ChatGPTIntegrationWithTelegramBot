@@ -34,12 +34,22 @@ Read from appsettings only:
 - BotSettings:ChatGptSystemPrompt (required)
 - BotSettings:RetryTelegramWebhookInitializerDelay (required TimeSpan, for example 00:00:30)
 - BotSettings:MaxTelegramRequestLength (required integer, for example 1500)
+- BotSettings:AiRequestLimitPerUser (required integer, for example 10)
+- BotSettings:AiRequestLimitPeriod (required TimeSpan, for example 24:00:00)
 
 ## Telegram request filtering
 
 - The webhook endpoint applies a message-length filter before forwarding text to ChatGPT.
 - If the incoming message length exceeds `BotSettings:MaxTelegramRequestLength`, the request is rejected.
 - The bot sends a response explaining the reason for rejection and includes the configured limit.
+
+## AI request rate limiting
+
+- The webhook endpoint applies a per-user AI request limit filter before forwarding text to ChatGPT.
+- Per-user request count is controlled by `BotSettings:AiRequestLimitPerUser`.
+- Block duration is controlled by `BotSettings:AiRequestLimitPeriod`.
+- When a user reaches the configured request limit, further requests are rejected until the configured period expires.
+- Rate limit state is stored in in-memory cache and automatically removed for inactive users using sliding expiration.
 
 ## Local run (without Docker)
 
