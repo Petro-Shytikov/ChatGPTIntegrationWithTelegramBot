@@ -18,6 +18,18 @@ ASP.NET Core Web API that receives Telegram bot updates and forwards user messag
 - Telegram.Bot
 - Microsoft.Agents.AI.OpenAI
 - OpenAI SDK for .NET
+- TUnit for unit testing
+
+## Tests
+
+- Unit tests live in `tests/WebService.Tests`.
+- The repository uses `Microsoft.Testing.Platform` via `global.json`, so solution-level test runs should use the `--solution` switch.
+
+Run tests locally:
+
+```bash
+dotnet test --solution ChatGPTIntegrationWithTelegramBot.slnx
+```
 
 ## Configuration sources
 
@@ -87,6 +99,22 @@ docker run --rm --env-file .env -p 8080:8080 chatgptintegrationwithtelegrambot-e
 
 ```bash
 curl http://localhost:8080/health
+```
+
+## Docker test run
+
+Use the dedicated test Dockerfile to execute the unit tests inside a container.
+
+1. Build the test image:
+
+```bash
+docker build -f Dockerfile.tests -t chatgptintegrationwithtelegrambot-tests:local .
+```
+
+2. Run the test container:
+
+```bash
+docker run --rm chatgptintegrationwithtelegrambot-tests:local
 ```
 
 ## Telegram webhook registration

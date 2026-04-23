@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-public sealed class AppConfiguration : IAppConfiguration
+public sealed class AppConfiguration : IAppConfiguration, IValidatableObject
 {
 	public AppConfiguration(
 		string telegramBotToken,
@@ -55,4 +55,66 @@ public sealed class AppConfiguration : IAppConfiguration
 
 	[Required]
 	public TimeSpan AiRequestLimitPeriod { get; }
+
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+	{
+		if (string.IsNullOrWhiteSpace(TelegramBotToken))
+		{
+			yield return CreateValidationResult(
+				$"{nameof(TelegramBotToken)} must not be empty or whitespace.",
+				nameof(TelegramBotToken));
+		}
+
+		if (string.IsNullOrWhiteSpace(TelegramPublicWebhookUrl))
+		{
+			yield return CreateValidationResult(
+				$"{nameof(TelegramPublicWebhookUrl)} must not be empty or whitespace.",
+				nameof(TelegramPublicWebhookUrl));
+		}
+
+		if (string.IsNullOrWhiteSpace(TelegramWebhookSecretToken))
+		{
+			yield return CreateValidationResult(
+				$"{nameof(TelegramWebhookSecretToken)} must not be empty or whitespace.",
+				nameof(TelegramWebhookSecretToken));
+		}
+
+		if (string.IsNullOrWhiteSpace(OpenAiApiKey))
+		{
+			yield return CreateValidationResult(
+				$"{nameof(OpenAiApiKey)} must not be empty or whitespace.",
+				nameof(OpenAiApiKey));
+		}
+
+		if (string.IsNullOrWhiteSpace(ChatGptModel))
+		{
+			yield return CreateValidationResult(
+				$"{nameof(ChatGptModel)} must not be empty or whitespace.",
+				nameof(ChatGptModel));
+		}
+
+		if (string.IsNullOrWhiteSpace(ChatGptSystemPrompt))
+		{
+			yield return CreateValidationResult(
+				$"{nameof(ChatGptSystemPrompt)} must not be empty or whitespace.",
+				nameof(ChatGptSystemPrompt));
+		}
+
+		if (RetryTelegramWebhookInitializerDelay <= TimeSpan.Zero)
+		{
+			yield return CreateValidationResult(
+				$"{nameof(RetryTelegramWebhookInitializerDelay)} must be greater than zero.",
+				nameof(RetryTelegramWebhookInitializerDelay));
+		}
+
+		if (AiRequestLimitPeriod <= TimeSpan.Zero)
+		{
+			yield return CreateValidationResult(
+				$"{nameof(AiRequestLimitPeriod)} must be greater than zero.",
+				nameof(AiRequestLimitPeriod));
+		}
+	}
+
+	private static ValidationResult CreateValidationResult(string errorMessage, string memberName) =>
+		new(errorMessage, [memberName]);
 }
