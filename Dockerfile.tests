@@ -1,0 +1,13 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS test
+WORKDIR /src
+
+COPY ["ChatGPTIntegrationWithTelegramBot.slnx", "./"]
+COPY ["global.json", "./"]
+COPY ["src/WebService/WebService.csproj", "src/WebService/"]
+COPY ["tests/WebService.Tests/WebService.Tests.csproj", "tests/WebService.Tests/"]
+
+RUN dotnet restore "ChatGPTIntegrationWithTelegramBot.slnx"
+
+COPY . .
+
+CMD ["dotnet", "test", "--solution", "ChatGPTIntegrationWithTelegramBot.slnx", "--configuration", "Release", "--no-restore", "--disable-logo"]
